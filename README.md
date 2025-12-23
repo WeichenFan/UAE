@@ -22,7 +22,7 @@
 </p>
 
 <div align="center">
-                      <a href="https://arxiv.org/pdf/2510.14979">Paper link</a>
+                      <a href="https://arxiv.org/pdf/2510.14979">Paper</a> | <a href="https://huggingface.co/weepiess2383/UAE">Weights</a> 
                       <!-- <a href="https://weichenfan.github.io/webpage-cfg-zero-star/">Project Page</a> |
                       <a href="https://huggingface.co/spaces/weepiess2383/CFG-Zero-Star">Demo</a> |
                       <a href="https://huggingface.co/spaces/jamesliu1217/EasyControl_Ghibli">Demo for Ghibli style</a> -->
