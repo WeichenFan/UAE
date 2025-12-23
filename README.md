@@ -61,3 +61,7 @@ MS-COCO: PSNR=29.484 dB | SSIM=0.8846 | rFID=0.157
 <!-- 🔥 [Huggingface demo for Ghibli style generation](https://huggingface.co/spaces/jamesliu1217/EasyControl_Ghibli) supported by [EasyControl](https://github.com/Xiaojiu-z/EasyControl).
 
 ⚡️ [Huggingface demo](https://huggingface.co/spaces/weepiess2383/CFG-Zero-Star) now supports text-to-image generation with SD3 and SD3.5. -->
+
+## ✨ Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=WeichenFan/UAE&type=timeline&legend=top-left)](https://www.star-history.com/#WeichenFan/UAE&type=timeline&legend=top-left)
