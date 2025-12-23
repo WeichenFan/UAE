@@ -62,6 +62,19 @@ MS-COCO: PSNR=29.484 dB | SSIM=0.8846 | rFID=0.157
 
 ⚡️ [Huggingface demo](https://huggingface.co/spaces/weepiess2383/CFG-Zero-Star) now supports text-to-image generation with SD3 and SD3.5. -->
 
+## BibTex
+```
+@misc{fan2025uae,
+      title={The Prism Hypothesis: Harmonizing Semantic and Pixel Representations via Unified Autoencoding}, 
+      author={Weichen Fan and Haiwen Diao and Quan Wang and Dahua Lin and Ziwei Liu},
+      year={2025},
+      eprint={2512.19693},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2512.19693}, 
+}
+```
+
 ## ✨ Star History
 
 
