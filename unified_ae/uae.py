@@ -195,11 +195,13 @@ class UnifiedUAE(nn.Module):
 
         if return_pre_frequency:
             return pre_frequency_latent, z
+        
         if self.do_normalization:
             mean = self._format_latent_stat(self.latent_mean, z.device, z.dtype)
             var = self._format_latent_stat(self.latent_var, z.device, z.dtype)
             if mean is not None and var is not None:
                 z = (z - mean) / torch.sqrt(var + z.new_tensor(self.eps))
+                
         return z
 
     def decode(self, z: torch.Tensor) -> torch.Tensor:
