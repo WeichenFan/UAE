@@ -43,7 +43,7 @@
 ## Quick evaluation
 ~~~ bash
 python eval_unified_ae.py \
-  --config UAE/unified_ae/configs/stage1_infer.yaml \
+  --config unified_ae/configs/stage1_infer.yaml \
   --checkpoint PATH_TO_WEIGHTS \
   --imagenet-path PATH_TO_IMAGENET \
   --coco-path PATH_TO_COCO \
