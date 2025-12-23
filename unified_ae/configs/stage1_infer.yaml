@@ -1,6 +1,5 @@
 stage_1:
   target: unified_ae.UnifiedUAE
-  ckpt: unified_results_new/stage1/004-stage3_high_corrupt_gan_fixed-UnifiedUAE/checkpoints/final.pt
   params:
     encoder_cls: 'Dinov2withNorm'
     encoder_config_path: 'facebook/dinov2-with-registers-base'
