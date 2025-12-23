@@ -64,4 +64,5 @@ MS-COCO: PSNR=29.484 dB | SSIM=0.8846 | rFID=0.157
 
 ## ✨ Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=WeichenFan/UAE&type=timeline&legend=top-left)](https://www.star-history.com/#WeichenFan/UAE&type=timeline&legend=top-left)
+
+[![Star History Chart](https://api.star-history.com/svg?repos=WeichenFan/UAE&type=date&legend=top-left)](https://www.star-history.com/#WeichenFan/UAE&type=date&legend=top-left)
