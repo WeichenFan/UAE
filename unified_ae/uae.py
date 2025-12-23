@@ -181,11 +181,6 @@ class UnifiedUAE(nn.Module):
                 z = z.transpose(1, 2).view(b, c, h, w)
         if freeze_encoder:
             z = z.detach()
-        if self.do_normalization:
-            mean = self._format_latent_stat(self.latent_mean, z.device, z.dtype)
-            var = self._format_latent_stat(self.latent_var, z.device, z.dtype)
-            if mean is not None and var is not None:
-                z = (z - mean) / torch.sqrt(var + z.new_tensor(self.eps))
         pre_frequency_latent = z
         if apply_frequency:
             z = self._apply_frequency(z, dropout=dropout, freq_ratio=freq_ratio)
@@ -200,6 +195,11 @@ class UnifiedUAE(nn.Module):
 
         if return_pre_frequency:
             return pre_frequency_latent, z
+        if self.do_normalization:
+            mean = self._format_latent_stat(self.latent_mean, z.device, z.dtype)
+            var = self._format_latent_stat(self.latent_var, z.device, z.dtype)
+            if mean is not None and var is not None:
+                z = (z - mean) / torch.sqrt(var + z.new_tensor(self.eps))
         return z
 
     def decode(self, z: torch.Tensor) -> torch.Tensor:
