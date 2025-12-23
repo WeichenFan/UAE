@@ -53,6 +53,11 @@ python eval_unified_ae.py \
   --freq-ratio 1.0 \
   --log-file logs/uae_eval_metrics.txt
 ~~~
+**Expected Results:**
+~~~bash
+ImageNet: PSNR=29.588 dB | SSIM=0.8789 | rFID=0.193
+MS-COCO: PSNR=29.484 dB | SSIM=0.8846 | rFID=0.157
+~~~
 <!-- 🔥 [Huggingface demo for Ghibli style generation](https://huggingface.co/spaces/jamesliu1217/EasyControl_Ghibli) supported by [EasyControl](https://github.com/Xiaojiu-z/EasyControl).
 
 ⚡️ [Huggingface demo](https://huggingface.co/spaces/weepiess2383/CFG-Zero-Star) now supports text-to-image generation with SD3 and SD3.5. -->
