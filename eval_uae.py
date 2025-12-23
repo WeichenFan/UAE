@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-"""
-Evaluate Unified UAE reconstructions on datasets with PSNR / SSIM / rFID.
-"""
 from __future__ import annotations
 
 import argparse

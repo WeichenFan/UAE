@@ -78,14 +78,12 @@ def update_ema(ema_model, model, decay=0.9999):
     model_params = OrderedDict(model.named_parameters())
 
     for name, param in model_params.items():
-        # TODO: Consider applying only to params that require_grad to avoid small numerical changes of pos_embed
         ema_params[name].mul_(decay).add_(param.data, alpha=1 - decay)
 
     ema_buffers = OrderedDict(ema_model.named_buffers())
     model_buffers = OrderedDict(model.named_buffers())
 
     for name, buffer in model_buffers.items():
-        # TODO: Consider applying only to params that require_grad to avoid small numerical changes of pos_embed
         ema_buffers[name].mul_(decay).add_(buffer.data, alpha=1 - decay)
 
 
@@ -163,18 +161,19 @@ def setup_exp_dir(rank, args):
     args = args.basic
     # Setup an experiment folder:
     if rank == 0:
-        os.makedirs(args.results_dir, exist_ok=True)  # Make results folder (holds all experiment subfolders)
+        os.makedirs(args.results_dir, exist_ok=True)  
 
         experiment_index = len(glob(f"{args.results_dir}/*"))
         temp = glob(f"{args.results_dir}/*")
         temp = [int(os.path.basename(_).split("-")[0]) for _ in temp]
         experiment_index = max(temp) + 1 if len(temp) > 0 else 0
 
-        # model_string_name = args.model.replace("/", "-")  # e.g., DiT-XL/2 --> DiT-XL-2 (for naming folders)
+
         model_string_name = args.exp_name
 
-        experiment_dir = f"{args.results_dir}/{experiment_index:04d}-{model_string_name}-GPU{dist.get_world_size()}"  # Create an experiment folder
-        checkpoint_dir = f"{experiment_dir}/checkpoints"  # Stores saved model checkpoints
+        experiment_dir = f"{args.results_dir}/{experiment_index:04d}-{model_string_name}-GPU{dist.get_world_size()}"  
+        
+        checkpoint_dir = f"{experiment_dir}/checkpoints"  
 
         os.makedirs(checkpoint_dir, exist_ok=True)
         logger = create_logger(experiment_dir)
