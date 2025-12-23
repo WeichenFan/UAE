@@ -37,6 +37,22 @@
 [![Generic badge](https://img.shields.io/badge/Checkpoint-red.svg)](https://huggingface.co/Vchitect/Vchitect-XL-2B) -->
 🔥 More coming soon!
 
+## Installation
+🔥 On the way
+
+## Quick evaluation
+~~~ bash
+python eval_unified_ae.py \
+  --config UAE/unified_ae/configs/stage1_infer.yaml \
+  --checkpoint PATH_TO_WEIGHTS \
+  --imagenet-path PATH_TO_IMAGENET \
+  --coco-path PATH_TO_COCO \
+  --batch-size 16 \
+  --num-workers 8 \
+  --image-size 256 \
+  --freq-ratio 1.0 \
+  --log-file logs/uae_eval_metrics.txt
+~~~
 <!-- 🔥 [Huggingface demo for Ghibli style generation](https://huggingface.co/spaces/jamesliu1217/EasyControl_Ghibli) supported by [EasyControl](https://github.com/Xiaojiu-z/EasyControl).
 
 ⚡️ [Huggingface demo](https://huggingface.co/spaces/weepiess2383/CFG-Zero-Star) now supports text-to-image generation with SD3 and SD3.5. -->
