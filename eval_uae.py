@@ -246,7 +246,7 @@ def parse_args():
     parser.add_argument("--config", type=Path, required=True)
     parser.add_argument("--checkpoint", type=Path, default=None)
     parser.add_argument("--imagenet-path", type=Path, required=True)
-    parser.add_argument("--coco-path", type=Path, required=True)
+    parser.add_argument("--coco-path", type=Path, default=None, help="Optional MS-COCO root; skip if not provided.")
     parser.add_argument("--batch-size", type=int, default=16)
     parser.add_argument("--num-workers", type=int, default=8)
     parser.add_argument("--image-size", type=int, default=256)
@@ -261,8 +261,14 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = load_uae(args.config, args.checkpoint, device)
 
+    targets = [("ImageNet", args.imagenet_path)]
+    if args.coco_path is not None:
+        targets.append(("MS-COCO", args.coco_path))
+    if not targets:
+        raise ValueError("No evaluation datasets provided. Pass at least --imagenet-path or --coco-path.")
+
     results = []
-    for name, path in [("ImageNet", args.imagenet_path), ("MS-COCO", args.coco_path)]:
+    for name, path in targets:
         print(f"Evaluating on {name}...")
         metrics = evaluate_dataset(name, model, path, args, device)
         print(

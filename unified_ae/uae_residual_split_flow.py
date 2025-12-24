@@ -112,7 +112,6 @@ class LearnedConvProjector(BandProjector):
         self._num_bands: Optional[int] = None
         self._device: Optional[torch.device] = None
         self._dtype: Optional[torch.dtype] = None
-        self._last_masks: List[torch.Tensor] = []
 
     def _build_layers(
         self,
@@ -163,7 +162,6 @@ class LearnedConvProjector(BandProjector):
         del schedule
         _, channels, _, _ = x.shape
         self._build_layers(int(channels), int(num_bands), x.device, x.dtype)
-        self._last_masks = []
 
     def _activate(self, logits: torch.Tensor) -> torch.Tensor:
         temperature = logits.new_tensor(self.temperature, dtype=logits.dtype)
@@ -199,11 +197,7 @@ class LearnedConvProjector(BandProjector):
         mask = self._activate(logits)
         if mask.dtype != x.dtype:
             mask = mask.to(dtype=x.dtype)
-        self._last_masks.append(mask.detach())
         return x * mask
-
-    def last_masks(self) -> List[torch.Tensor]:
-        return list(self._last_masks)
 
 
 class UAEResidualSplitFlowProcessor(nn.Module):
@@ -227,7 +221,6 @@ class UAEResidualSplitFlowProcessor(nn.Module):
                 f"Unsupported condition_strategy '{self.config.condition_strategy}'. "
                 "Expected one of: 'mask', 'scale', 'residual', 'noise_only'."
             )
-        self._last_condition: Optional[torch.Tensor] = None
 
     def forward(self, latent: torch.Tensor, band_condition: Optional[torch.Tensor] = None) -> Tuple[
         List[torch.Tensor], List[torch.Tensor]
@@ -252,7 +245,6 @@ class UAEResidualSplitFlowProcessor(nn.Module):
             condition = band_condition.to(dtype=self.config.dtype)
             if self.config.clamp_condition:
                 condition = condition.clamp_(0.0, 1.0)
-        self._last_condition = condition.detach().clone() if condition is not None else None
 
         for band_idx in range(self.num_bands):
             band_component = self.projector.project(residual, band_idx)
@@ -277,6 +269,3 @@ class UAEResidualSplitFlowProcessor(nn.Module):
             cumulative.append(cumulative_acc.to(latent.dtype).clone())
 
         return bands, cumulative
-
-    def last_condition(self) -> Optional[torch.Tensor]:
-        return self._last_condition

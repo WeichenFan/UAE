@@ -208,3 +208,10 @@ __marimo__/
 
 logs
 logs/*
+results
+results/*
+outputs
+outputs/*
+wandb
+wandb/*
+unified_ae/gan/.caches

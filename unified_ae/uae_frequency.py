@@ -3,10 +3,8 @@ from __future__ import annotations
 import logging
 import numpy as np
 import torch
-import torch.fft as fft
 import torch.nn as nn
 
-from dataclasses import dataclass
 from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 from .uae_residual_split_flow import (
@@ -15,72 +13,6 @@ from .uae_residual_split_flow import (
     UAEResidualSplitFlowConfig,
     UAEResidualSplitFlowProcessor,
 )
-
-
-class ChannelPermutation(nn.Module):
-    def __init__(self, channels: int, identity: bool = False):
-        super().__init__()
-        if identity:
-            perm = torch.arange(channels)
-        else:
-            perm = torch.randperm(channels)
-        inv = torch.argsort(perm)
-        self.register_buffer("perm", perm)
-        self.register_buffer("inv_perm", inv)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return x[:, self.perm, :, :]
-
-    def inverse(self, x: torch.Tensor) -> torch.Tensor:
-        return x[:, self.inv_perm, :, :]
-
-
-class Invertible1x1Conv(nn.Module):
-    def __init__(self, channels: int, identity: bool = False):
-        super().__init__()
-        if identity:
-            weight = torch.eye(channels)
-        else:
-            w = torch.randn(channels, channels)
-            q, _ = torch.linalg.qr(w)
-            if torch.det(q) < 0:
-                q[:, 0] = -q[:, 0]
-            weight = q
-        self.weight = nn.Parameter(weight)
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        B, C, H, W = x.shape
-        w = self.weight
-        out = torch.matmul(w, x.view(B, C, -1))
-        return out.view(B, C, H, W)
-
-    def inverse(self, x: torch.Tensor) -> torch.Tensor:
-        B, C, H, W = x.shape
-        w_inv = torch.linalg.inv(self.weight)
-        out = torch.matmul(w_inv, x.view(B, C, -1))
-        return out.view(B, C, H, W)
-
-
-class InvertibleSpectralTransform(nn.Module):
-    def __init__(self, channels: int, num_layers: int, identity_init: bool = False):
-        super().__init__()
-        self.layers = nn.ModuleList()
-        for idx in range(num_layers):
-            perm = ChannelPermutation(channels, identity=identity_init)
-            conv = Invertible1x1Conv(channels, identity=identity_init)
-            self.layers.append(nn.ModuleList([perm, conv]))
-
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        for perm, conv in self.layers:
-            x = perm(x)
-            x = conv(x)
-        return x
-
-    def inverse(self, x: torch.Tensor) -> torch.Tensor:
-        for perm, conv in reversed(self.layers):
-            x = conv.inverse(x)
-            x = perm.inverse(x)
-        return x
 
 
 class BandSpectralLayer(nn.Module):
@@ -140,6 +72,7 @@ class FrequencyBandModulator(nn.Module):
         dynamic_schedule: Optional[dict] = None,
     ):
         super().__init__()
+        del using_znorm, beta, default_qresi_counts, share_quant_resi, num_latent_tokens
 
         self.embed_dim = embed_dim
         self.codebook_drop = codebook_drop
@@ -175,13 +108,6 @@ class FrequencyBandModulator(nn.Module):
         self.configure_bands(
             self.freq_first_patch, self.freq_num_bands, self.freq_max_patch, schedule=schedule_init
         )
-        self._latest_freq_energy: List[float] = []
-        self._latest_freq_energy_pre: List[float] = []
-        self._latest_freq_energy_post: List[float] = []
-        self._latest_freq_energy_ratio_pre: List[float] = []
-        self._latest_freq_energy_ratio_post: List[float] = []
-        self._latest_band_mask: Optional[torch.Tensor] = None
-
 
     def forward(
         self,
@@ -190,10 +116,9 @@ class FrequencyBandModulator(nn.Module):
         dropout: Optional[torch.Tensor] = None,
         band_ratio: Optional[torch.Tensor] = None,
     ) -> Tuple[torch.Tensor, Optional[List[float]], torch.Tensor, torch.Tensor, torch.Tensor]:
-        processed_bands, cumulative, quant, energy_post, _ = self._process_latent(
+        processed_bands, quant, energy_post = self._process_latent(
             f_BChw, dropout, self.training, band_ratio=band_ratio
         )
-        self._latest_freq_energy = list(energy_post)
         zero = f_BChw.new_zeros(())
         usages = [value * 100.0 for value in energy_post] if ret_usages else None
         return quant, usages, zero, zero, zero
@@ -207,80 +132,21 @@ class FrequencyBandModulator(nn.Module):
         band_ratio: Optional[torch.Tensor] = None,
     ) -> List[torch.Tensor]:
         del v_patch_nums
-        processed_bands, cumulative, quant, energy_post, pre_bands = self._process_latent(
-            z, None, False, band_ratio=band_ratio
-        )
-        self._latest_freq_energy = list(energy_post)
+        processed_bands, quant, _ = self._process_latent(z, None, False, band_ratio=band_ratio)
         if to_fhat:
-            if return_bands:
-                return processed_bands
-            return cumulative if cumulative else [quant]
+            return processed_bands if return_bands else [quant]
 
         features: List[torch.Tensor] = []
-        for lat in (cumulative if cumulative else [quant]):
+        for lat in (quant,):
             b, c, h, w = lat.shape
             features.append(lat.view(b, c, h * w).transpose(1, 2).contiguous())
         return features
-
-    def idxBl_to_var_input(self, gt_idx_Bl: List[torch.Tensor]) -> Optional[torch.Tensor]:
-        if not gt_idx_Bl:
-            return None
-        return torch.cat(gt_idx_Bl, dim=1)
-
-    def get_next_autoregressive_input(
-        self,
-        si: int,
-        SN: int,
-        f_hat: torch.Tensor,
-        h_BChw: torch.Tensor,
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
-        del si, SN
-        return f_hat + h_BChw, f_hat + h_BChw
-
-    def latest_frequency_energy(self) -> List[float]:
-        return list(self._latest_freq_energy)
-
-    def latest_frequency_energy_pre_transform(self) -> List[float]:
-        return list(self._latest_freq_energy_pre)
-
-    def latest_frequency_energy_post_transform(self) -> List[float]:
-        return list(self._latest_freq_energy_post)
-
-    def latest_frequency_energy_ratio_pre_transform(self) -> List[float]:
-        return list(self._latest_freq_energy_ratio_pre)
-
-    def latest_frequency_energy_ratio_post_transform(self) -> List[float]:
-        return list(self._latest_freq_energy_ratio_post)
-
-    def latest_band_mask(self) -> Optional[torch.Tensor]:
-        return self._latest_band_mask
-
-    def raw_band_tensor(
-        self,
-        latent: torch.Tensor,
-        *,
-        band_ratio: Optional[torch.Tensor] = None,
-        training: bool = False,
-    ) -> torch.Tensor:
-        raw_bands, band_condition, _ = self._prepare_raw_bands(latent, band_ratio, training)
-        if not raw_bands:
-            return latent.unsqueeze(1)
-        stacked = torch.stack([band.contiguous() for band in raw_bands], dim=1)
-        if band_condition is not None:
-            mask_stack = band_condition.to(device=stacked.device, dtype=stacked.dtype)
-            if mask_stack.ndim == 2:
-                mask_stack = mask_stack.unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
-            self._latest_band_mask = mask_stack
-        else:
-            self._latest_band_mask = None
-        return stacked
 
     def reconstruct_from_bands(
         self,
         band_tensor: torch.Tensor,
         *,
         band_ratio: Optional[torch.Tensor] = None,
-        track_energy: bool = False,
     ) -> torch.Tensor:
         if band_tensor.ndim != 5:
             raise ValueError(
@@ -309,29 +175,12 @@ class FrequencyBandModulator(nn.Module):
             bands_fp = bands_fp * mask_tensor
 
         processed = [bands_fp[:, idx, ...].contiguous() for idx in range(num_bands)]
-        if track_energy:
-            energy_vals = [band.pow(2).mean().detach().item() for band in processed]
-        else:
-            energy_vals = None
 
         stacked = torch.cat(processed, dim=1)
         denoiser = self._select_denoiser(num_bands, stacked.device, stacked.dtype)
         denoised = denoiser(stacked)
         residual = sum(processed)
         combined = denoised + residual
-
-        if track_energy:
-            total = sum(energy_vals) + 1e-8 if energy_vals else 1.0
-            ratios = [value / total for value in energy_vals] if energy_vals else [1.0]
-            self._latest_freq_energy_pre = list(energy_vals or [])
-            self._latest_freq_energy_post = list(energy_vals or [])
-            self._latest_freq_energy_ratio_pre = list(ratios)
-            self._latest_freq_energy_ratio_post = list(ratios)
-            self._latest_freq_energy = list(energy_vals or [])
-            if mask_tensor is not None:
-                self._latest_band_mask = mask_tensor.squeeze(-1).squeeze(-1).squeeze(-1)
-            else:
-                self._latest_band_mask = None
 
         if combined.dtype != original_dtype:
             combined = combined.to(dtype=original_dtype)
@@ -630,14 +479,14 @@ class FrequencyBandModulator(nn.Module):
         training: bool,
         *,
         band_ratio: Optional[torch.Tensor] = None,
-    ) -> Tuple[List[torch.Tensor], List[torch.Tensor], torch.Tensor, List[float], List[torch.Tensor]]:
+    ) -> Tuple[List[torch.Tensor], torch.Tensor, List[float]]:
         device = latent.device
         b = latent.size(0)
-        raw_bands, band_condition, num_processor_bands = self._prepare_raw_bands(latent, band_ratio, training)
-        SN = len(raw_bands)
+        del dropout
+        raw_bands, band_condition, _ = self._prepare_raw_bands(latent, band_ratio, training)
+        num_bands = len(raw_bands)
 
         corrupted_bands: List[torch.Tensor] = []
-        band_mask_vectors: List[torch.Tensor] = []
         use_noise = self.band_noise_strategy == "noise" and training
         for si, band in enumerate(raw_bands):
             if si < band_condition.shape[1]:
@@ -662,32 +511,16 @@ class FrequencyBandModulator(nn.Module):
             else:
                 corrupted = band
             corrupted_bands.append(corrupted)
-            band_mask_vectors.append(band_keep)
 
-        if use_noise:
-            self._latest_band_mask = None
-        else:
-            mask_stack = torch.stack(band_mask_vectors, dim=1)
-            self._latest_band_mask = mask_stack.to(device=device, dtype=latent.dtype)
-
-        conditioned_bands: List[torch.Tensor] = corrupted_bands
-
-        energy_pre: List[float] = [band.pow(2).mean().detach().item() for band in conditioned_bands]
-
-        band_transform = self._select_band_transform(len(conditioned_bands), device, latent.dtype)
+        band_transform = self._select_band_transform(len(corrupted_bands), device, latent.dtype)
         if band_transform is not None:
-            stacked = torch.stack(conditioned_bands, dim=1)
+            stacked = torch.stack(corrupted_bands, dim=1)
             transformed_stack = band_transform(stacked)
-            transformed_bands = [transformed_stack[:, si, ...] for si in range(SN)]
+            transformed_bands = [transformed_stack[:, si, ...] for si in range(num_bands)]
         else:
-            transformed_bands = conditioned_bands
+            transformed_bands = corrupted_bands
 
         energy_post: List[float] = [band.pow(2).mean().detach().item() for band in transformed_bands]
-
-        total_pre = sum(energy_pre) + 1e-8
-        total_post = sum(energy_post) + 1e-8
-        ratios_pre = [value / total_pre for value in energy_pre] if energy_pre else [1.0]
-        ratios_post = [value / total_post for value in energy_post] if energy_post else [1.0]
 
         processed_bands: List[torch.Tensor] = [band.clone() for band in transformed_bands]
 
@@ -697,25 +530,11 @@ class FrequencyBandModulator(nn.Module):
         residual = sum(processed_bands)
         f_hat = denoised + residual
 
-        self._latest_freq_energy_pre = energy_pre
-        self._latest_freq_energy_post = energy_post
-        self._latest_freq_energy_ratio_pre = ratios_pre
-        self._latest_freq_energy_ratio_post = ratios_post
-        self._latest_freq_energy = energy_post
-
-        cumulative: List[torch.Tensor] = []
-
-        return processed_bands, cumulative, f_hat, energy_post, conditioned_bands
-
-    def _apply_residual(self, band: torch.Tensor, si: int, SN: int) -> torch.Tensor:
-        return band
+        return processed_bands, f_hat, energy_post
 
 
 
 __all__ = [
     "BandSpectralTransform",
     "FrequencyBandModulator",
-    "ChannelPermutation",
-    "Invertible1x1Conv",
-    "InvertibleSpectralTransform",
 ]
