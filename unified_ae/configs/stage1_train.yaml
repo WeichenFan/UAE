@@ -1,0 +1,286 @@
+stages:
+  sub_stage1:
+    stage_1:
+      target: unified_ae.UnifiedUAE
+      params:
+        encoder_cls: 'Dinov2withNorm'
+        encoder_config_path: 'facebook/dinov2-with-registers-base'
+        encoder_input_size: 224
+        encoder_params:
+          dinov2_path: 'facebook/dinov2-with-registers-base'
+          normalize: true
+        encoder_trainable: false
+        decoder_config_path: 'unified_ae/configs/decoder/ViTXL'
+        noise_tau: 0.8
+        reshape_to_2d: true
+        frequency_config:
+          freq_first_patch: 0.32
+          freq_num_bands: 2
+          freq_max_patch: 16.0
+          v_patch_nums: [0.32, 16.0]
+          quant_resi: 0.0
+          share_quant_resi: 4
+          codebook_drop: 0.0
+          spectral_transform_layers: 2
+          use_residual_split: true
+          residual_projector: "fft"
+          band_mask_fusion: "noise"
+
+    training:
+      epochs: 10
+      batch_size: 64
+      num_workers: 8
+      clip_grad: 1.0
+      log_interval: 100
+      checkpoint_interval: 5000
+      eval_interval: 5000
+      freq_ratio_mode: full
+      freq_ratio_min: 1.0
+      freq_ratio_max: 1.0
+      freq_ratio_mix_prob: 0.0
+      corruption:
+        high_band_prob: 0.0
+        full_band_prob: 0.0
+        noise_std: 0.0
+      use_gan: false
+      gan_on_corrupt_only: false
+      use_lpips: true
+      dynamic_band_weights:
+        enabled: false
+      band_reg:
+        enabled: true
+        weight: 0.0
+        reference_model: 'facebook/dinov2-with-registers-base'
+
+  sub_stage2:
+    stage_1:
+      target: unified_ae.UnifiedUAE
+      ckpt: results/sub_stage1/000-sub_stage1-UnifiedUAE/checkpoints/final.pt 
+      params:
+        encoder_cls: 'Dinov2withNorm'
+        encoder_config_path: 'facebook/dinov2-with-registers-base'
+        encoder_input_size: 224
+        encoder_params:
+          dinov2_path: 'facebook/dinov2-with-registers-base'
+          normalize: true
+        encoder_trainable: true
+        decoder_config_path: 'unified_ae/configs/decoder/ViTXL'
+        noise_tau: 0.8
+        reshape_to_2d: true
+        frequency_config:
+          freq_first_patch: 0.32
+          freq_num_bands: 2
+          freq_max_patch: 16.0
+          v_patch_nums: [0.32, 16.0]
+          quant_resi: 0.0
+          share_quant_resi: 4
+          codebook_drop: 0.0
+          spectral_transform_layers: 2
+          use_residual_split: true
+          residual_projector: "fft"
+          band_mask_fusion: "noise"
+
+    training:
+      epochs: 10
+      batch_size: 32
+      num_workers: 8
+      clip_grad: 1.0
+      log_interval: 100
+      checkpoint_interval: 5000
+      eval_interval: 1000
+      freq_ratio_mode: full
+      freq_ratio_min: 1.0
+      freq_ratio_max: 1.0
+      freq_ratio_mix_prob: 0.0
+      corruption:
+        high_band_prob: 0.0
+        full_band_prob: 0.0
+        noise_std: 0.0
+      use_gan: false
+      gan_on_corrupt_only: false
+      use_lpips: true
+      perceptual_weight: 1.0
+      dynamic_band_weights:
+        enabled: false
+      band_reg:
+        enabled: true
+        weight: 0.1
+        reference_model: 'facebook/dinov2-with-registers-base'
+
+  sub_stage3:
+    stage_1:
+      target: unified_ae.UnifiedUAE
+      ckpt: results/sub_stage2/000-sub_stage2-UnifiedUAE/checkpoints/final.pt
+      params:
+        encoder_cls: 'Dinov2withNorm'
+        encoder_config_path: 'facebook/dinov2-with-registers-base'
+        encoder_input_size: 224
+        encoder_params:
+          dinov2_path: 'facebook/dinov2-with-registers-base'
+          normalize: true
+        encoder_trainable: true
+        decoder_config_path: 'unified_ae/configs/decoder/ViTXL'
+        noise_tau: 0.8
+        reshape_to_2d: true
+        frequency_config:
+          freq_first_patch: 0.32
+          freq_num_bands: 2
+          freq_max_patch: 16.0
+          v_patch_nums: [0.32, 16.0]
+          quant_resi: 0.0
+          share_quant_resi: 4
+          codebook_drop: 0.0
+          spectral_transform_layers: 2
+          use_residual_split: true
+          residual_projector: "fft"
+          band_mask_fusion: "noise"
+
+    training:
+      epochs: 15
+      batch_size: 32
+      num_workers: 8
+      clip_grad: 1.0
+      log_interval: 100
+      checkpoint_interval: 5000
+      eval_interval: 1000
+      freq_ratio_mode: mixed
+      freq_ratio_min: 0.6
+      freq_ratio_max: 1.0
+      freq_ratio_mix_prob: 0.7
+      corruption:
+        high_band_prob: 0.7
+        full_band_prob: 0.0
+        noise_std: 0.6
+      use_gan: false
+      gan_on_corrupt_only: true
+      use_lpips: true
+      use_ema: false
+      ema_decay: 0.999
+      optimizer:
+        lr: 5.0e-5
+        betas: [0.5, 0.9]
+        weight_decay: 0.0
+      scheduler:
+        type: cosine
+        warmup_epochs: 1
+        decay_end_epoch: 15
+        base_lr: 5.0e-5
+        final_lr: 1.0e-5
+      dynamic_band_weights:
+        enabled: true
+        recon_min: 0.05
+        recon_full: 1.0
+        perceptual_min: 0.05
+        perceptual_full: 1.0
+        disc_min: 0.0
+        disc_full: 0.75
+      band_reg:
+        enabled: true
+        weight: 0.1
+        reference_model: 'facebook/dinov2-with-registers-base'
+      perceptual_weight: 1.0
+
+  sub_stage4:
+    stage_1:
+      target: unified_ae.UnifiedUAE
+      ckpt: results/sub_stage3/000-sub_stage3-UnifiedUAE/checkpoints/final.pt
+      params:
+        encoder_cls: 'Dinov2withNorm'
+        encoder_config_path: 'facebook/dinov2-with-registers-base'
+        encoder_input_size: 224
+        encoder_params:
+          dinov2_path: 'facebook/dinov2-with-registers-base'
+          normalize: true
+        encoder_trainable: true
+        decoder_config_path: 'unified_ae/configs/decoder/ViTXL'
+        noise_tau: 0.8
+        reshape_to_2d: true
+        frequency_config:
+          freq_first_patch: 0.32
+          freq_num_bands: 2
+          freq_max_patch: 16.0
+          v_patch_nums: [0.32, 16.0]
+          quant_resi: 0.0
+          share_quant_resi: 4
+          codebook_drop: 0.0
+          spectral_transform_layers: 2
+          use_residual_split: true
+          residual_projector: "fft"
+          band_mask_fusion: "noise"
+
+    training:
+      epochs: 15
+      batch_size: 32
+      num_workers: 8
+      clip_grad: 1.0
+      log_interval: 100
+      checkpoint_interval: 5000
+      eval_interval: 1000
+      freq_ratio_mode: mixed
+      freq_ratio_min: 0.6
+      freq_ratio_max: 1.0
+      freq_ratio_mix_prob: 0.7
+      corruption:
+        high_band_prob: 0.7
+        full_band_prob: 0.0
+        noise_std: 0.6
+      use_gan: true
+      gan_on_corrupt_only: true
+      use_lpips: true
+      use_ema: false
+      ema_decay: 0.999
+      optimizer:
+        lr: 5.0e-5
+        betas: [0.5, 0.9]
+        weight_decay: 0.0
+      scheduler:
+        type: cosine
+        warmup_epochs: 1
+        decay_end_epoch: 15
+        base_lr: 5.0e-5
+        final_lr: 1.0e-5
+      dynamic_band_weights:
+        enabled: true
+        recon_min: 0.05
+        recon_full: 1.0
+        perceptual_min: 0.05
+        perceptual_full: 1.0
+        disc_min: 0.0
+        disc_full: 0.75
+      band_reg:
+        enabled: true
+        weight: 0.1
+        reference_model: 'facebook/dinov2-with-registers-base'
+
+    gan:
+      disc:
+        arch:
+          dino_ckpt_path: 'unified_ae/discs/dino_vit_small_patch8_224.pth'
+          ks: 9
+          norm_type: 'bn'
+          using_spec_norm: true
+          recipe: 'S_8'
+        optimizer:
+          lr: 1.0e-4
+          betas: [0.5, 0.9]
+          weight_decay: 0.0
+        scheduler:
+          type: cosine
+          warmup_epochs: 1
+          decay_end_epoch: 15
+          base_lr: 1.0e-4
+          final_lr: 1.0e-5
+        augment:
+          prob: 1.0
+          cutout: 0.2
+      loss:
+        disc_loss: hinge
+        gen_loss: vanilla
+        disc_weight: 0.75
+        perceptual_weight: 1.0
+        disc_start: 0
+        disc_upd_start: 0
+        lpips_start: 0
+        max_d_weight: 10000.0
+        disc_updates: 1
+

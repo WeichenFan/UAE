@@ -61,15 +61,93 @@ python eval_uae.py \
   --image-size 256 \
   --freq-ratio 1.0 \
   --log-file logs/uae_eval_metrics.txt
+
+python eval_uae.py \
+  --config unified_ae/configs/stage1_infer.yaml \
+  --checkpoint /mnt/afs/wtx/code/tx_backup/UAE/unified_results/stage3_1/010-UnifiedUAE/checkpoints/final.pt \
+  --imagenet-path /mnt/afs/fanweichen/code/NFIG/val  \
+  --batch-size 16 \
+  --num-workers 8 \
+  --image-size 256 \
+  --freq-ratio 1.0 \
+  --log-file logs/uae_eval_metrics.txt
 ~~~
 **Expected Results:**
 ~~~bash
 ImageNet: PSNR=29.588 dB | SSIM=0.8789 | rFID=0.193
 MS-COCO: PSNR=29.484 dB | SSIM=0.8846 | rFID=0.157
 ~~~
-<!-- 🔥 [Huggingface demo for Ghibli style generation](https://huggingface.co/spaces/jamesliu1217/EasyControl_Ghibli) supported by [EasyControl](https://github.com/Xiaojiu-z/EasyControl).
 
-⚡️ [Huggingface demo](https://huggingface.co/spaces/weepiess2383/CFG-Zero-Star) now supports text-to-image generation with SD3 and SD3.5. -->
+## Training
+There are four sub-stages to train our UAE model.
+
+~~~ bash
+export WANDB_API_KEY=YOUR_KEY
+export WANDB_ENTITY=YOUR_ID
+export WANDB_PROJECT=PROJECT_NAME
+
+DATA_ROOT=PATH_TO_TRAIN_OF_IMGNET
+VAL_ROOT=PATH_TO_VAL_OF_IMGNET                              
+
+accelerate launch train_uae.py \
+  --config unified_ae/configs/stage1_train.yaml \
+  --stage-key sub_stage1 \
+  --data-path "$DATA_ROOT" \
+  --val-path "$VAL_ROOT" \
+  --results-dir results/sub_stage1 \
+  --mixed-precision YOUR_PRECISION(bf16 or no) \
+  --wandb --wandb-name uae_1
+
+
+export WANDB_API_KEY=YOUR_KEY
+export WANDB_ENTITY=YOUR_ID
+export WANDB_PROJECT=PROJECT_NAME
+
+DATA_ROOT=PATH_TO_TRAIN_OF_IMGNET
+VAL_ROOT=PATH_TO_VAL_OF_IMGNET  
+
+accelerate launch train_uae.py \
+  --config unified_ae/configs/stage1_train.yaml \
+  --stage-key sub_stage2 \
+  --data-path "$DATA_ROOT" \
+  --val-path "$VAL_ROOT" \
+  --results-dir results/sub_stage2 \
+  --mixed-precision YOUR_PRECISION(bf16 or no) \
+  --wandb --wandb-name uae_2
+
+export WANDB_API_KEY=YOUR_KEY
+export WANDB_ENTITY=YOUR_ID
+export WANDB_PROJECT=PROJECT_NAME
+
+DATA_ROOT=PATH_TO_TRAIN_OF_IMGNET
+VAL_ROOT=PATH_TO_VAL_OF_IMGNET  
+
+accelerate launch train_uae.py \
+  --config unified_ae/configs/stage1_train.yaml \
+  --stage-key sub_stage3 \
+  --data-path "$DATA_ROOT" \
+  --val-path "$VAL_ROOT" \
+  --results-dir results/sub_stage3 \
+  --mixed-precision YOUR_PRECISION(bf16 or no) \
+  --wandb --wandb-name uae_3
+
+export WANDB_API_KEY=YOUR_KEY
+export WANDB_ENTITY=YOUR_ID
+export WANDB_PROJECT=PROJECT_NAME
+
+DATA_ROOT=PATH_TO_TRAIN_OF_IMGNET
+VAL_ROOT=PATH_TO_VAL_OF_IMGNET  
+
+accelerate launch train_uae.py \
+  --config unified_ae/configs/stage1_train.yaml \
+  --stage-key sub_stage4 \
+  --data-path "$DATA_ROOT" \
+  --val-path "$VAL_ROOT" \
+  --results-dir results/sub_stage4 \
+  --mixed-precision YOUR_PRECISION(bf16 or no) \
+  --wandb --wandb-name uae_4
+~~~
+
 
 ## BibTex
 ```
