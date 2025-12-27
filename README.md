@@ -82,6 +82,7 @@ MS-COCO: PSNR=29.484 dB | SSIM=0.8846 | rFID=0.157
 There are four sub-stages to train our UAE model.
 
 ~~~ bash
+# sub-stage 1
 export WANDB_API_KEY=YOUR_KEY
 export WANDB_ENTITY=YOUR_ID
 export WANDB_PROJECT=PROJECT_NAME
@@ -98,6 +99,8 @@ accelerate launch train_uae.py \
   --mixed-precision YOUR_PRECISION(bf16 or no) \
   --wandb --wandb-name uae_1
 
+#---
+# sub-stage 2
 
 export WANDB_API_KEY=YOUR_KEY
 export WANDB_ENTITY=YOUR_ID
@@ -115,6 +118,9 @@ accelerate launch train_uae.py \
   --mixed-precision YOUR_PRECISION(bf16 or no) \
   --wandb --wandb-name uae_2
 
+#---
+# sub-stage 3
+
 export WANDB_API_KEY=YOUR_KEY
 export WANDB_ENTITY=YOUR_ID
 export WANDB_PROJECT=PROJECT_NAME
@@ -130,6 +136,9 @@ accelerate launch train_uae.py \
   --results-dir results/sub_stage3 \
   --mixed-precision YOUR_PRECISION(bf16 or no) \
   --wandb --wandb-name uae_3
+
+#---
+# sub-stage 4
 
 export WANDB_API_KEY=YOUR_KEY
 export WANDB_ENTITY=YOUR_ID
