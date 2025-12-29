@@ -43,6 +43,7 @@ stages:
         full_band_prob: 0.0
         noise_std: 0.0
       use_gan: false
+      use_ema: true
       gan_on_corrupt_only: false
       use_lpips: true
       dynamic_band_weights:
@@ -97,6 +98,7 @@ stages:
         full_band_prob: 0.0
         noise_std: 0.0
       use_gan: false
+      use_ema: true
       gan_on_corrupt_only: false
       use_lpips: true
       perceptual_weight: 1.0
@@ -154,7 +156,7 @@ stages:
       use_gan: false
       gan_on_corrupt_only: true
       use_lpips: true
-      use_ema: false
+      use_ema: true
       ema_decay: 0.999
       optimizer:
         lr: 5.0e-5
@@ -227,7 +229,7 @@ stages:
       use_gan: true
       gan_on_corrupt_only: true
       use_lpips: true
-      use_ema: false
+      use_ema: true
       ema_decay: 0.999
       optimizer:
         lr: 5.0e-5
