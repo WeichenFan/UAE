@@ -215,3 +215,4 @@ outputs/*
 wandb
 wandb/*
 unified_ae/gan/.caches
+results*
