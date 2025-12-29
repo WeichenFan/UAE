@@ -81,6 +81,7 @@ MS-COCO: PSNR=29.484 dB | SSIM=0.8846 | rFID=0.157
 ## Training
 There are four sub-stages to train our UAE model.
 
+Follow the scripts to step-by-step reproduce our results.
 ~~~ bash
 # sub-stage 1
 export WANDB_API_KEY=YOUR_KEY
@@ -98,10 +99,11 @@ accelerate launch train_uae.py \
   --results-dir results/sub_stage1 \
   --mixed-precision YOUR_PRECISION(bf16 or no) \
   --wandb --wandb-name uae_1
+~~~
+After this you will get model with FID=103.870, PSNR=18.025 dB
 
-#---
+~~~ bash
 # sub-stage 2
-
 export WANDB_API_KEY=YOUR_KEY
 export WANDB_ENTITY=YOUR_ID
 export WANDB_PROJECT=PROJECT_NAME
@@ -117,10 +119,11 @@ accelerate launch train_uae.py \
   --results-dir results/sub_stage2 \
   --mixed-precision YOUR_PRECISION(bf16 or no) \
   --wandb --wandb-name uae_2
+~~~
+After this you will get model with FID=0.968, PSNR=27.356 dB
 
-#---
+~~~ bash
 # sub-stage 3
-
 export WANDB_API_KEY=YOUR_KEY
 export WANDB_ENTITY=YOUR_ID
 export WANDB_PROJECT=PROJECT_NAME
@@ -136,10 +139,11 @@ accelerate launch train_uae.py \
   --results-dir results/sub_stage3 \
   --mixed-precision YOUR_PRECISION(bf16 or no) \
   --wandb --wandb-name uae_3
+~~~
+After this you will get model with FID=0.530, PSNR=30.110 dB
 
-#---
+~~~ python
 # sub-stage 4
-
 export WANDB_API_KEY=YOUR_KEY
 export WANDB_ENTITY=YOUR_ID
 export WANDB_PROJECT=PROJECT_NAME
@@ -156,6 +160,7 @@ accelerate launch train_uae.py \
   --mixed-precision YOUR_PRECISION(bf16 or no) \
   --wandb --wandb-name uae_4
 ~~~
+After this you will get model with FID=0.166, PSNR=29.499 dB
 
 
 ## BibTex
