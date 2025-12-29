@@ -61,17 +61,8 @@ python eval_uae.py \
   --image-size 256 \
   --freq-ratio 1.0 \
   --log-file logs/uae_eval_metrics.txt
-
-python eval_uae.py \
-  --config unified_ae/configs/stage1_infer.yaml \
-  --checkpoint /mnt/afs/wtx/code/tx_backup/UAE/unified_results/stage3_1/010-UnifiedUAE/checkpoints/final.pt \
-  --imagenet-path /mnt/afs/fanweichen/code/NFIG/val  \
-  --batch-size 16 \
-  --num-workers 8 \
-  --image-size 256 \
-  --freq-ratio 1.0 \
-  --log-file logs/uae_eval_metrics.txt
 ~~~
+
 **Expected Results:**
 ~~~bash
 ImageNet: PSNR=29.588 dB | SSIM=0.8789 | rFID=0.193
