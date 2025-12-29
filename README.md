@@ -72,7 +72,7 @@ MS-COCO: PSNR=29.484 dB | SSIM=0.8846 | rFID=0.157
 ## Training
 There are four sub-stages to train our UAE model.
 
-Follow the scripts to step-by-step reproduce our results.
+Follow the scripts to step-by-step reproduce our results. The per-stage checkpoints and training logs are provided here: [link](https://huggingface.co/weepiess2383/UAE/tree/main/results).
 ~~~ bash
 # sub-stage 1
 export WANDB_API_KEY=YOUR_KEY
