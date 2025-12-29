@@ -142,7 +142,7 @@ accelerate launch train_uae.py \
 ~~~
 After this you will get model with FID=0.530, PSNR=30.110 dB
 
-~~~ python
+~~~ bash
 # sub-stage 4
 export WANDB_API_KEY=YOUR_KEY
 export WANDB_ENTITY=YOUR_ID
