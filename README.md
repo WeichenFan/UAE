@@ -35,7 +35,10 @@
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FVchitect%2FVchitect-2.0&count_bg=%23BDC4B7&title_bg=%2342C4A8&icon=octopusdeploy.svg&icon_color=%23E7E7E7&title=visitors&edge_flat=true)](https://hits.seeyoufarm.com)
 [![Generic badge](https://img.shields.io/badge/DEMO-Vchitect2.0_Demo-<COLOR>.svg)](https://huggingface.co/spaces/Vchitect/Vchitect-2.0)
 [![Generic badge](https://img.shields.io/badge/Checkpoint-red.svg)](https://huggingface.co/Vchitect/Vchitect-XL-2B) -->
-🔥 More coming soon!
+
+
+## 🔥 Update and News
+- [2026.3.25] New UAE model has been updated!
 
 ## Installation
 ~~~bash
@@ -49,110 +52,34 @@ uv pip install timm==0.9.16 accelerate==0.23.0 torchdiffeq==0.2.5 wandb
 uv pip install "numpy<2" transformers einops omegaconf
 uv pip install torchmetrics
 ~~~
+
+## Model Preparation
+~~~ bash
+pip install huggingface_hub
+hf download weepiess2383/UAE \
+  --local-dir downloads 
+~~~
+
 ## Quick evaluation
 ~~~ bash
-python eval_uae.py \
-  --config unified_ae/configs/stage1_infer.yaml \
-  --checkpoint PATH_TO_WEIGHTS \
-  --imagenet-path PATH_TO_IMAGENET \
-  --coco-path PATH_TO_COCO \
-  --batch-size 16 \
-  --num-workers 8 \
+torchrun --standalone --nproc_per_node=8 src/stage1_sample_ddp.py \
+  --config downloads/checkpoints/DINOv2-B/config.yaml \
+  --data-path PATH_TO_IMAGENET_VALSET \
+  --per-proc-batch-size 64 \
   --image-size 256 \
-  --freq-ratio 1.0 \
-  --log-file logs/uae_eval_metrics.txt
+  --reference-npz-path downloads/data/val_ImageNet.npz \
+  --sample-dir output/UEA_DINOv2-B/recon_samples_ImageNet \
+  --metrics psnr,ssim,rfid
+
+torchrun --standalone --nproc_per_node=8 src/stage1_sample_ddp.py \
+  --config downloads/checkpoints/DINOv2-B/config.yaml \
+  --data-path PATH_TO_MSCOCO2017_VALSET \
+  --per-proc-batch-size 64 \
+  --image-size 256 \
+  --reference-npz-path downloads/data/val_COCO2017.npz \
+  --sample-dir output/UEA_DINOv2-B/recon_samples_COCO \
+  --metrics psnr,ssim,rfid
 ~~~
-
-**Expected Results:**
-~~~bash
-ImageNet: PSNR=29.588 dB | SSIM=0.8789 | rFID=0.193
-MS-COCO: PSNR=29.484 dB | SSIM=0.8846 | rFID=0.157
-~~~
-
-## Training
-There are four sub-stages to train our UAE model.
-
-Follow the scripts to step-by-step reproduce our results. The per-stage checkpoints and training logs are provided here: [link](https://huggingface.co/weepiess2383/UAE/tree/main/results).
-~~~ bash
-# sub-stage 1
-export WANDB_API_KEY=YOUR_KEY
-export WANDB_ENTITY=YOUR_ID
-export WANDB_PROJECT=PROJECT_NAME
-
-DATA_ROOT=PATH_TO_TRAIN_OF_IMGNET
-VAL_ROOT=PATH_TO_VAL_OF_IMGNET                              
-
-accelerate launch train_uae.py \
-  --config unified_ae/configs/stage1_train.yaml \
-  --stage-key sub_stage1 \
-  --data-path "$DATA_ROOT" \
-  --val-path "$VAL_ROOT" \
-  --results-dir results/sub_stage1 \
-  --mixed-precision YOUR_PRECISION(bf16 or no) \
-  --wandb --wandb-name uae_1
-~~~
-After this you will get model with FID=103.870, PSNR=18.025 dB
-
-~~~ bash
-# sub-stage 2
-export WANDB_API_KEY=YOUR_KEY
-export WANDB_ENTITY=YOUR_ID
-export WANDB_PROJECT=PROJECT_NAME
-
-DATA_ROOT=PATH_TO_TRAIN_OF_IMGNET
-VAL_ROOT=PATH_TO_VAL_OF_IMGNET  
-
-accelerate launch train_uae.py \
-  --config unified_ae/configs/stage1_train.yaml \
-  --stage-key sub_stage2 \
-  --data-path "$DATA_ROOT" \
-  --val-path "$VAL_ROOT" \
-  --results-dir results/sub_stage2 \
-  --mixed-precision YOUR_PRECISION(bf16 or no) \
-  --wandb --wandb-name uae_2
-~~~
-After this you will get model with FID=0.968, PSNR=27.356 dB
-
-~~~ bash
-# sub-stage 3
-export WANDB_API_KEY=YOUR_KEY
-export WANDB_ENTITY=YOUR_ID
-export WANDB_PROJECT=PROJECT_NAME
-
-DATA_ROOT=PATH_TO_TRAIN_OF_IMGNET
-VAL_ROOT=PATH_TO_VAL_OF_IMGNET  
-
-accelerate launch train_uae.py \
-  --config unified_ae/configs/stage1_train.yaml \
-  --stage-key sub_stage3 \
-  --data-path "$DATA_ROOT" \
-  --val-path "$VAL_ROOT" \
-  --results-dir results/sub_stage3 \
-  --mixed-precision YOUR_PRECISION(bf16 or no) \
-  --wandb --wandb-name uae_3
-~~~
-After this you will get model with FID=0.530, PSNR=30.110 dB
-
-~~~ bash
-# sub-stage 4
-export WANDB_API_KEY=YOUR_KEY
-export WANDB_ENTITY=YOUR_ID
-export WANDB_PROJECT=PROJECT_NAME
-
-DATA_ROOT=PATH_TO_TRAIN_OF_IMGNET
-VAL_ROOT=PATH_TO_VAL_OF_IMGNET  
-
-accelerate launch train_uae.py \
-  --config unified_ae/configs/stage1_train.yaml \
-  --stage-key sub_stage4 \
-  --data-path "$DATA_ROOT" \
-  --val-path "$VAL_ROOT" \
-  --results-dir results/sub_stage4 \
-  --mixed-precision YOUR_PRECISION(bf16 or no) \
-  --wandb --wandb-name uae_4
-~~~
-After this you will get model with FID=0.166, PSNR=29.499 dB
-
 
 ## BibTex
 ```
@@ -166,8 +93,11 @@ After this you will get model with FID=0.166, PSNR=29.499 dB
       url={https://arxiv.org/abs/2512.19693}, 
 }
 ```
+## Acknowledgement
+The code is built upon the following repositories:
+- [RAE](https://github.com/bytetriper/RAE): for the training and sampling framework.
+- [DCTdiff](https://github.com/forever208/DCTdiff): for some frequency module implementations.
 
 ## ✨ Star History
-
 
 [![Star History Chart](https://api.star-history.com/svg?repos=WeichenFan/UAE&type=date&legend=top-left)](https://www.star-history.com/#WeichenFan/UAE&type=date&legend=top-left)
