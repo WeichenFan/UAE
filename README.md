@@ -81,6 +81,24 @@ torchrun --standalone --nproc_per_node=8 src/stage1_sample_ddp.py \
   --metrics psnr,ssim,rfid
 ~~~
 
+## Training
+### 1. CLIP-L
+```bash
+torchrun --standalone --nproc_per_node=N \
+  src/train_stage1.py \
+  --config configs/stage1/clip/stage1.yaml \
+  --data-path <imagenet_train_split> \
+  --results-dir results/clip/stage1 \
+  --image-size 256 --precision bf16/fp32 
+
+torchrun --standalone --nproc_per_node=N \
+  src/train_stage1.py \
+  --config configs/stage1/clip/stage2.yaml \
+  --data-path <imagenet_train_split> \
+  --results-dir results/clip/stage2 \
+  --image-size 256 --precision bf16/fp32 
+```
+
 ## BibTex
 ```
 @misc{fan2025uae,
