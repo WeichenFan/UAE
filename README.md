@@ -127,6 +127,34 @@ torchrun --standalone --nproc_per_node=N \
   --image-size 256 --precision bf16/fp32 
 ```
 
+## Preliminary Findings
+~~~ bash
+python analysis/retrival_exp.py \
+  --data-path /path/to/imagenet/val \
+  --text-template "the image of {}" \
+  --topk 1 \
+  --retrieval-filter-shape radial \
+  --retrieval-radial-norm axis
+
+python analysis/energy_exp.py \
+  --data-path /path/to/imagenet/val \
+  --output-file /path/to/output.png
+~~~
+More details could be find: prelim_analysis/README.md
+
+<table align="center">
+  <tr>
+    <td align="center" width="50%">
+      <img src="prelim_analysis/prelim_output/energy_exp/output.png" alt="Energy Distributions." width="100%" /><br />
+      <em>Pixel-space generative modeling.</em>
+    </td>
+    <td align="center" width="50%">
+      <img src="prelim_analysis/prelim_output/retrival_exp/output.png" alt="Text-to-Image Retrival." width="100%" /><br />
+      <em>Latent-space generative modeling.</em>
+    </td>
+  </tr>
+</table>
+
 ## BibTex
 ```
 @misc{fan2025uae,
