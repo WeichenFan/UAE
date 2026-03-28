@@ -146,11 +146,11 @@ More details could be find: prelim_analysis/README.md
   <tr>
     <td align="center" width="50%">
       <img src="prelim_analysis/prelim_output/energy_exp/output.png" alt="Energy Distributions." width="100%" /><br />
-      <em>Pixel-space generative modeling.</em>
+      <em>Energy Distributions.</em>
     </td>
     <td align="center" width="50%">
-      <img src="prelim_analysis/prelim_output/retrival_exp/output.png" alt="Text-to-Image Retrival." width="100%" /><br />
-      <em>Latent-space generative modeling.</em>
+      <img src="prelim_analysis/prelim_output/retrival_exp/output.png" alt="Text-to-Image Retrival." width="88%" /><br />
+      <em>Text-to-Image Retrival.</em>
     </td>
   </tr>
 </table>
