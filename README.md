@@ -55,15 +55,18 @@
 </div>
 <p align="center"><em>Reconstruction benchmarks on ImageNet-1K and MS-COCO 2017, showing strong image fidelity together with competitive semantic representation quality.</em></p>
 
-<div align="center">
-  <img src="assets/pixel_modeling.png" alt="UAE pixel modeling results" width="70%" />
-</div>
-<p align="center"><em>Pixel-space generative modeling.</em></p>
-
-<div align="center">
-  <img src="assets/latent_modeling.png" alt="UAE latent modeling comparison" width="70%" />
-</div>
-<p align="center"><em>Latent-space generative modeling.</em></p>
+<table align="center">
+  <tr>
+    <td align="center" width="50%">
+      <img src="assets/pixel_modeling.png" alt="UAE pixel modeling results" width="100%" /><br />
+      <em>Pixel-space generative modeling.</em>
+    </td>
+    <td align="center" width="50%">
+      <img src="assets/latent_modeling.png" alt="UAE latent modeling comparison" width="100%" /><br />
+      <em>Latent-space generative modeling.</em>
+    </td>
+  </tr>
+</table>
 
 ## Installation
 ~~~bash
