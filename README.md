@@ -40,6 +40,16 @@
 ## 🔥 Update and News
 - [2026.3.25] New UAE model has been updated!
 
+<div align="center">
+  <img src="assets/model_overview.png" alt="UAE model overview" width="90%" />
+</div>
+<p align="center"><em>The new UAE pipeline without adding extra tokens for generative modeling.</em></p>
+
+<div align="center">
+  <img src="assets/modeling_scheme.png" alt="UAE modeling scheme" width="90%" />
+</div>
+<p align="center"><em>Flexible generative modeling supported by UAE.</em></p>
+
 ## Installation
 ~~~bash
 conda create -n uae python=3.10 -y
