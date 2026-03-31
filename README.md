@@ -110,22 +110,28 @@ torchrun --standalone --nproc_per_node=8 src/stage1_sample_ddp.py \
 ~~~
 
 ## Training
-### 1. CLIP-L
+### 1. Unified-Autoencoder Pretraining
 ```bash
+# Stage-1
 torchrun --standalone --nproc_per_node=N \
   src/train_stage1.py \
-  --config configs/stage1/clip/stage1.yaml \
+  --config PATH_TO_STAGE_1 (e.g configs/stage1/clip/stage1.yaml) \
   --data-path <imagenet_train_split> \
-  --results-dir results/clip/stage1 \
-  --image-size 256 --precision bf16/fp32 
+  --results-dir OUTPUT_PATH (e.g results/clip/stage1) \
+  --image-size 256 --precision fp32 
 
+# Stage-1-2
 torchrun --standalone --nproc_per_node=N \
   src/train_stage1.py \
-  --config configs/stage1/clip/stage2.yaml \
+  --config PATH_TO_STAGE_1_2 (e.g configs/stage1/clip/stage2.yaml) \
   --data-path <imagenet_train_split> \
-  --results-dir results/clip/stage2 \
-  --image-size 256 --precision bf16/fp32 
+  --results-dir OUTPUT_PATH (e.g results/clip/stage) \
+  --image-size 256 --precision fp32 
 ```
+### 2. Generative Modeling
+#### 2.1 Latent-Space Modeling
+
+#### 2.2 Pixel-Space Modeling
 
 ## Preliminary Findings
 ~~~ bash

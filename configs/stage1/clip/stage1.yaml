@@ -44,7 +44,7 @@ eval:
 gan:
   disc:
     arch:
-      dino_ckpt_path: 'models/discs/dino_vit_small_patch8_224.pth'
+      dino_ckpt_path: 'downloads/discs/dino_vit_small_patch8_224.pth'
       ks: 9
       norm_type: 'bn'
       using_spec_norm: true

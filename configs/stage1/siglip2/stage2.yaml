@@ -1,15 +1,14 @@
 stage_1:
   target: stage1.RAE
-  ckpt: 'results/clip/stage1/clip_stage_1/checkpoints/ep-last.pt'
+  ckpt: 'results/siglip2/stage1/siglip2_stage_1/checkpoints/ep-last.pt'
   params:
-    encoder_cls: 'CLIPwNorm'
-    encoder_config_path: 'openai/clip-vit-large-patch14'
-    encoder_input_size: 224
+    encoder_cls: 'SigLIP2wNorm'
+    encoder_config_path: 'google/siglip2-base-patch16-256'
+    encoder_input_size: 256
     encoder_params:
-      model_name: 'openai/clip-vit-large-patch14'
-      normalize: true
+      model_name: 'google/siglip2-base-patch16-256'
     decoder_config_path: 'configs/decoder/ViTXL'
-    noise_tau: 0.8 
+    noise_tau: 0.8
     reshape_to_2d: true
     frequency_config:
       freq_order: zigzag
@@ -17,10 +16,10 @@ stage_1:
       band_split:
         enabled: true
         mode: low
-        count: 36
+        count: 128
         apply_prob: 0.5
         uniform: true
-        count_min: 36
+        count_min: 128
         count_max: 256
         per_sample: true
 
@@ -31,7 +30,7 @@ training:
   ema_decay: 0.9978
   encoder_trainable: true
   encoder_lr_ratio: 1.0
-  global_batch_size: 256
+  global_batch_size: 512
   num_workers: 8
   clip_grad: 0.0
   log_interval: 100
@@ -53,7 +52,7 @@ training:
     weight: 0.5
     mode: soft
     freq_transform: dct
-    first_tokens: 64
+    first_tokens: 128
     token_order: zigzag
     soft_curve: power
     soft_power: 1.0
@@ -103,4 +102,3 @@ gan:
     lpips_start: 0
     max_d_weight: 10000.0
     disc_updates: 1
-    
