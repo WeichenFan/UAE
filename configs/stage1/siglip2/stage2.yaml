@@ -1,5 +1,5 @@
 stage_1:
-  target: stage1.RAE
+  target: stage1.UAE
   ckpt: 'results/siglip2/stage1/siglip2_stage_1/checkpoints/ep-last.pt'
   params:
     encoder_cls: 'SigLIP2wNorm'

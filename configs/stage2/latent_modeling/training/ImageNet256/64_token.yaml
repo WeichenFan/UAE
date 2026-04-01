@@ -1,0 +1,98 @@
+stage_1:
+  target: stage1.UAE
+  ckpt: 'downloads/checkpoints/DINOv2-B/ep-last.pt'
+  params:
+    encoder_cls: 'Dinov2withNorm'
+    encoder_config_path: 'facebook/dinov2-with-registers-base'
+    encoder_input_size: 224
+    encoder_params:
+      dinov2_path: 'facebook/dinov2-with-registers-base'
+      normalize: true
+    decoder_config_path: 'configs/decoder/ViTXL'
+    noise_tau: 0.0
+    reshape_to_2d: true
+    frequency_config:
+      freq_order: zigzag
+      freq_transform: dct
+      band_split:
+        enabled: true
+        mode: low
+        count: 64
+    normalization_stat_path: 'stats/UAE_64token/normalization_stats.pt'
+
+stage_2:
+  target: stage2.models.DDT.DiTwDDTHead
+  params:
+    input_size: 16
+    patch_size: 1
+    in_channels: 768
+    hidden_size: [1152, 2048]
+    depth: [28, 2]
+    num_heads: [16, 16]
+    mlp_ratio: 4.0
+    class_dropout_prob: 0.1
+    num_classes: 1000
+    use_qknorm: false
+    use_swiglu: true
+    use_rope: true
+    use_rmsnorm: true
+    wo_shift: false
+    use_pos_embed: true
+
+transport:
+  params:
+    path_type: 'Linear'
+    prediction: 'velocity'
+    loss_weight: null
+    time_dist_type: 'logit-normal_0_1'
+
+sampler:
+  mode: ODE
+  params:
+    sampling_method: 'euler'
+    num_steps: 50
+    atol: 1.0e-6
+    rtol: 1.0e-3
+    reverse: false
+
+guidance:
+  method: 'cfg'
+  scale: 1.0
+  t_min: 0.0
+  t_max: 1.0
+
+misc:
+  latent_size: [768, 16, 16] # [C, H, W]
+  num_classes: 1000
+  time_dist_shift_dim: 196608 # 16*16*768
+  time_dist_shift_base: 4096
+  
+eval:
+  eval_interval: 25000 # every 10 epochs
+  eval_model: true
+  data_path: 'data/imagenet/val'
+  reference_npz_path: 'data/imagenet/val_256.npz'
+
+
+training:
+  epochs: 1400
+  global_batch_size: 768
+  grad_accum_steps: 1 # change according to your GPU memory
+  ema_decay: 0.9995
+  num_workers: 16
+  log_interval: 100
+  checkpoint_interval: 10
+  sample_every: 10000
+  clip_grad: 1.0
+  global_seed: 42
+  optimizer:
+    lr: 2.0e-4
+    betas: [0.9, 0.95]
+    weight_decay: 0.0
+  scheduler:
+    type: linear
+    warmup_epochs: 40
+    decay_end_epoch: 800
+    base_lr: 2.0e-4
+    final_lr: 2.0e-5
+    warmup_from_zero: false

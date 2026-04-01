@@ -89,6 +89,7 @@ hf download weepiess2383/UAE \
 ~~~
 
 ## Quick evaluation
+### 1. Unified-Autoencoder
 ~~~ bash
 torchrun --standalone --nproc_per_node=8 src/stage1_sample_ddp.py \
   --config downloads/checkpoints/DINOv2-B/config.yaml \
@@ -107,6 +108,16 @@ torchrun --standalone --nproc_per_node=8 src/stage1_sample_ddp.py \
   --reference-npz-path downloads/data/val_COCO2017.npz \
   --sample-dir output/UEA_DINOv2-B/recon_samples_COCO \
   --metrics psnr,ssim,rfid
+~~~
+### 2. Generative Modeling
+~~~ bash
+torchrun --standalone --nnodes=1 --nproc_per_node=8 \
+  src/sample_latent_modeling_ddp.py \
+  --config configs/stage2/latent_modeling/sampling/ImageNet256/64token.yaml \
+  --sample-dir samples \
+  --precision fp32 \
+  --label-sampling equal \
+  --global-seed 42
 ~~~
 
 ## Training

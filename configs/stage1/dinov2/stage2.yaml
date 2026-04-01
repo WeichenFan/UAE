@@ -1,5 +1,5 @@
 stage_1:
-  target: stage1.RAE
+  target: stage1.UAE
   ckpt: 'results/dinov2/stage1/dinov2_stage_1/checkpoints/ep-last.pt'
   params:
     encoder_cls: 'Dinov2withNorm'

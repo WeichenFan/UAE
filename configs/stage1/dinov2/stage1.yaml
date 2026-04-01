@@ -1,5 +1,5 @@
 stage_1:
-  target: stage1.RAE
+  target: stage1.UAE
   params:
     encoder_cls: 'Dinov2withNorm'
     encoder_config_path: 'facebook/dinov2-with-registers-base'
