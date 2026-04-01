@@ -141,8 +141,39 @@ torchrun --standalone --nproc_per_node=N \
 ```
 ### 2. Generative Modeling
 #### 2.1 Latent-Space Modeling
+~~~ bash
+torchrun --standalone --nnodes=1 --nproc_per_node=8 \
+  src/train.py \
+  --config configs/stage2/latent_modeling/training/ImageNet256/64_token.yaml \
+  --data-path PATH_TO_IMAGENET_TRAIN \
+  --results-dir RESULTS_PATH \
+  --image-size 256 \
+  --precision fp32 \
+  --compile \
+  --wandb
+~~~
 
 #### 2.2 Pixel-Space Modeling
+~~~ bash
+cd pixel_modeling
+
+export WANDB_API_KEY=YOUR_KEYS
+export WANDB_ENTITY=ENTITY_NAME
+export WANDB_PROJECT=PROJ_NAME
+
+torchrun --nproc_per_node=8 --nnodes=1 --node_rank=0 \
+  main_jit.py \
+  --model JiT-700M \
+  --proj_dropout 0.0 \
+  --P_mean -0.8 --P_std 0.8 \
+  --img_size 256 --noise_scale 1.0 \
+  --batch_size 128 --blr 5e-5 \
+  --epochs 600 --warmup_epochs 5 \
+  --gen_bsz 128 --num_images 50000 --cfg 2.9 --interval_min 0.1 --interval_max 1.0 \
+  --output_dir output/pixel_modeling/JIT_700M_UAE --resume output/pixel_modeling/JIT_700M_UAE \
+  --data_path PATH_TO_IMAGENET --online_eval \
+  --wandb_project "$WANDB_PROJECT" --wandb_entity "$WANDB_ENTITY"
+~~~
 
 ## Preliminary Findings
 ~~~ bash
