@@ -70,8 +70,8 @@ misc:
 eval:
   eval_interval: 25000 # every 10 epochs
   eval_model: true
-  data_path: 'data/imagenet/val'
-  reference_npz_path: 'data/imagenet/val_256.npz'
+  data_path: PATH_TO_IMAGENET
+  reference_npz_path: 'downloads/data/val_ImageNet.npz'
 
 
 training:

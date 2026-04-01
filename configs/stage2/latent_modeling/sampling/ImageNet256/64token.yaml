@@ -21,6 +21,7 @@ stage_1:
     normalization_stat_path: 'downloads/stats/64_tokens/normalization_stats.pt'
 
 stage_2:
+  ckpt: PATH_TO_CKPT
   target: stage2.models.DDT.DiTwDDTHead
   params:
     input_size: 16
@@ -38,7 +39,6 @@ stage_2:
     use_rmsnorm: true
     wo_shift: false
     use_pos_embed: true
-  ckpt: '/mnt/afs/wtx/code/tx_backup/opensource/RAE_based/RAE/results/stage2/XL_64token/XL_64token_new_1/checkpoints/ep-last.pt'
 
 transport:
   params:
