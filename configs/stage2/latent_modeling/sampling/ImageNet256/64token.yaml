@@ -1,6 +1,6 @@
 stage_1:
   target: stage1.UAE
-  ckpt: 'downloads/checkpoints/Generative_Modeling/Latent_Modeling/64_tokens/ep-last.pt'
+  ckpt: 'downloads/checkpoints/Generative_Modeling/Latent_Modeling/64_tokens/stage_1.pt'
   params:
     encoder_cls: 'Dinov2withNorm'
     encoder_config_path: 'facebook/dinov2-with-registers-base'
@@ -18,10 +18,10 @@ stage_1:
         enabled: true
         mode: low
         count: 64
-    normalization_stat_path: 'downloads/stats/64_tokens/normalization_stats.pt'
+    normalization_stat_path: 'downloads/checkpoints/Generative_Modeling/Latent_Modeling/64_tokens/normalization_stats.pt'
 
 stage_2:
-  ckpt: PATH_TO_CKPT
+  ckpt: 'downloads/checkpoints/Generative_Modeling/Latent_Modeling/64_tokens/stage_2.pt'
   target: stage2.models.DDT.DiTwDDTHead
   params:
     input_size: 16
