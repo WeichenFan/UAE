@@ -1,4 +1,4 @@
-# The Prism Hypothesis: Harmonizing Semantic and Pixel Representations via Unified Autoencoding
+# [ECCV 2026] The Prism Hypothesis: Harmonizing Semantic and Pixel Representations via Unified Autoencoding
 
 <div class="is-size-5 publication-authors", align="center">
               <!-- Paper authors -->
@@ -38,6 +38,8 @@
 
 
 ## 🔥 Update and News
+- [2026.7] UAE is accepted to ECCV 2026.
+- [2026.5] We extend the core idea of UAE to pixel-space diffusion, check our latest work [Spectral-Forcing](https://github.com/WeichenFan/Spectral_Forcing).
 - [2026.3.25] New UAE model has been updated!
 
 <div align="center">
@@ -220,6 +222,4 @@ The code is built upon the following repositories:
 - [RAE](https://github.com/bytetriper/RAE): for the training and sampling framework.
 - [DCTdiff](https://github.com/forever208/DCTdiff): for some frequency module implementations.
 
-## ✨ Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=WeichenFan/UAE&type=date&legend=top-left)](https://www.star-history.com/#WeichenFan/UAE&type=date&legend=top-left)
